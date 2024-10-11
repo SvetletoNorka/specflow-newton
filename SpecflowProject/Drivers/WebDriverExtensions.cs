@@ -14,6 +14,14 @@ namespace SpecflowProject.Drivers
             _wait = new WebDriverWait(driver, waitTime);
         }
 
+        public class PostsTextHref
+        {
+            public HashSet<string> UniqueTexts { get; set; } = new HashSet<string>();
+            public HashSet<string> Hrefs { get; set; } = new HashSet<string>();
+        }
+
+        private PostsTextHref postsTextHref = new PostsTextHref();
+
         public void FindAndClick(By by)
         {
             // Wait for the element to be clickable
@@ -23,23 +31,24 @@ namespace SpecflowProject.Drivers
                 return (elem.Displayed && elem.Enabled) ? elem : null;
             });
 
-            // Click the element
+            //Click the element
             element.Click();
         }
 
-        public HashSet<string> CollectElementsUntil(By scrollingElements, int timeoutInSeconds = 10)
+        public PostsTextHref CollectElementsUntil(By scrollingElements, int timeoutInSeconds = 10)
         {
-            HashSet<string> uniqueTexts = new HashSet<string>();
             WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeoutInSeconds));
             bool reachedStopElement = false;
+            IList<IWebElement> pageElements;
 
             while (!reachedStopElement)
             {
-                IList<IWebElement> pageElements = _driver.FindElements(scrollingElements);
+                pageElements = _driver.FindElements(scrollingElements);
 
                 foreach (var element in pageElements)
                 {
-                    uniqueTexts.Add(element.Text);
+                    postsTextHref.UniqueTexts.Add(element.Text);
+                    postsTextHref.Hrefs.Add(element.GetAttribute("href"));
                 }
 
                 ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight);");
@@ -59,38 +68,15 @@ namespace SpecflowProject.Drivers
                 }
             }
 
-            return uniqueTexts;
+            return postsTextHref;
         }
 
         public void ScrollUpUntilElementFound(By by, int timeoutInSeconds = 10)
         {
-            ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollBy(0, -1000);");
             WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeoutInSeconds));
-
-            //try
-            //{
-            //    while (true)
-            //    {
-            //        try
-            //        {
-            //            if (_driver.FindElement(by).Displayed)
-            //            {
-            //                break;
-            //            }
-            //        }
-            //        catch (NoSuchElementException)
-            //        {
-            //            ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollBy(0, -300);");
-            //            wait.Until(d => d.FindElements(by).Count > 0);
-            //        }
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"An error occurred: {ex.Message}");
-            //}
+            IWebElement element = _driver.FindElement(by);
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
         }
-
 
         public IWebElement ScrollAndFindElement(By by, int timeoutInSeconds = 10)
         {

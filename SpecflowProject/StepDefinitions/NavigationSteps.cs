@@ -3,6 +3,7 @@ using SpecflowProject.Drivers;
 using SpecflowProject.StepDefinitions;
 using SpecFlowProject.Drivers;
 using TechTalk.SpecFlow;
+using static SpecflowProject.Drivers.WebDriverExtensions;
 
 namespace SpecFlowProject.StepDefinition
 {
@@ -11,8 +12,7 @@ namespace SpecFlowProject.StepDefinition
     {
         private readonly IWebDriver _driver;
         private readonly WebDriverExtensions _webDriverExtensions;
-        private HashSet<string> postsList = new HashSet<string>();
-
+        private PostsTextHref postsTextHref = new PostsTextHref();
         public NavigationSteps()
         {
             _driver = WebDriverController.Driver;
@@ -47,7 +47,7 @@ namespace SpecFlowProject.StepDefinition
         [When(@"I scrolls down to the end of the page with posts")]
         public void WhenIScrollsDownToTheEndOfPageOfPosts()
         {
-            postsList = _webDriverExtensions.CollectElementsUntil(By.XPath("//*[@class='posts-list']/article/div/h2/a"));
+            postsTextHref = _webDriverExtensions.CollectElementsUntil(By.XPath("//*[@class='posts-list']/article/div/h2/a"));
         }
 
         [When(@"I sroll up to article ""([^""]*)""")]
@@ -59,7 +59,8 @@ namespace SpecFlowProject.StepDefinition
         [When(@"I click on the article ""([^""]*)""")]
         public void WhenIClickOnTheArticle(string text)
         {
-            _webDriverExtensions.FindAndClick(By.XPath($"//a[normalize-space()='{text}']"));
+            var element = _driver.FindElement(By.XPath($"//a[normalize-space()='{text}']"));
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", element);
         }
 
         [Then(@"I verify the URL = ""([^""]*)"" of the page")]
@@ -93,12 +94,15 @@ namespace SpecFlowProject.StepDefinition
         [Then(@"I print all post titles and their links")]
         public void ThenIPrintsAllPostTitlesAndTheirLinks()
         {
-            Console.WriteLine("Съдържание на postsList:");
+            Console.WriteLine("Collection of Blog Posts:");
 
             int index = 1;
-            foreach (var post in postsList)
+            var texts = postsTextHref.UniqueTexts.ToList();
+            var hrefs = postsTextHref.Hrefs.ToList();
+
+            for (int i = 0; i < Math.Min(texts.Count, hrefs.Count); i++)
             {
-                Console.WriteLine($"{index}. {post}");
+                Console.WriteLine($"{index}. Title: {texts[i]}, Link: {hrefs[i]}");
                 index++;
             }
         }
