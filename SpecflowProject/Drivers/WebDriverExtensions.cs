@@ -23,7 +23,7 @@ namespace SpecflowProject.Drivers
                 return (elem.Displayed && elem.Enabled) ? elem : null;
             });
 
-            // Click the element
+            //Click the element
             element.Click();
         }
 
@@ -64,33 +64,10 @@ namespace SpecflowProject.Drivers
 
         public void ScrollUpUntilElementFound(By by, int timeoutInSeconds = 10)
         {
-            ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollBy(0, -1000);");
             WebDriverWait wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeoutInSeconds));
-
-            //try
-            //{
-            //    while (true)
-            //    {
-            //        try
-            //        {
-            //            if (_driver.FindElement(by).Displayed)
-            //            {
-            //                break;
-            //            }
-            //        }
-            //        catch (NoSuchElementException)
-            //        {
-            //            ((IJavaScriptExecutor)_driver).ExecuteScript("window.scrollBy(0, -300);");
-            //            wait.Until(d => d.FindElements(by).Count > 0);
-            //        }
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"An error occurred: {ex.Message}");
-            //}
+            IWebElement element = _driver.FindElement(by);
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].scrollIntoView(true);", element);
         }
-
 
         public IWebElement ScrollAndFindElement(By by, int timeoutInSeconds = 10)
         {
