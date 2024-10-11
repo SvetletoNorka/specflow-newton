@@ -59,7 +59,8 @@ namespace SpecFlowProject.StepDefinition
         [When(@"I click on the article ""([^""]*)""")]
         public void WhenIClickOnTheArticle(string text)
         {
-            _webDriverExtensions.FindAndClick(By.XPath($"//a[normalize-space()='{text}']"));
+            var element = _driver.FindElement(By.XPath($"//a[normalize-space()='{text}']"));
+            ((IJavaScriptExecutor)_driver).ExecuteScript("arguments[0].click();", element);
         }
 
         [Then(@"I verify the URL = ""([^""]*)"" of the page")]
